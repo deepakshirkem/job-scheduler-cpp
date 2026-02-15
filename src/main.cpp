@@ -5,10 +5,12 @@
 
 #include "ThreadSafeQueue.hpp"
 #include "Job.hpp"
+#include "JobState.hpp"
 #include "JobStateTracker.hpp"
 #include "JobExecutor.hpp"
 #include "WorkerPool.hpp"
 #include "JobManager.hpp"
+
 
 int main()
 {

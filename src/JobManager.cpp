@@ -1,7 +1,8 @@
 #include "JobManager.hpp"
 
-JobManager::JobManager(ThreadSafeQueue<std::shared_ptr<Job>>& queue, JobStateTracker& tracker)
-            : jobQueue(queue), tracker(tracker) {}
+JobManager::JobManager(ThreadSafeQueue<std::shared_ptr<Job>>& queue,
+                       JobStateTracker& tracker)
+    : jobQueue(queue), tracker(tracker) {}
 
 void JobManager::submitJob(std::shared_ptr<Job> job)
 {
@@ -9,7 +10,7 @@ void JobManager::submitJob(std::shared_ptr<Job> job)
     jobQueue.push(job);
 }
 
-JobState JobManager::getJobStatus(JobID id)
+JobState JobManager::getJobStatus(int id)
 {
     return tracker.getState(id);
 }

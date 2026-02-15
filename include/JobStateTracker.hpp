@@ -1,18 +1,19 @@
 #pragma once
+
+#include "JobState.hpp"  // MUST BE FIRST, before any other project headers
+
 #include <unordered_map>
 #include <mutex>
 
-#include "JobState.hpp"
-
-using JobID = int;
+#include "Job.hpp"
 
 class JobStateTracker
 {
-    public:
-        void setState(JobID id, JobState state);
-        JobState getState(JobID id);
+public:
+    void setState(Job::JobID id, JobState state);
+    JobState getState(Job::JobID id);
 
-    private:
-        std::unordered_map<JobID, JobState>  stateMap;
-        std::mutex stateMutex;
+private:
+    std::unordered_map<Job::JobID, JobState> stateMap;
+    std::mutex stateMutex;
 };

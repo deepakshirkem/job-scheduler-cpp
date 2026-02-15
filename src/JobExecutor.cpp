@@ -1,11 +1,11 @@
 #include "JobExecutor.hpp"
-#include "JobState.hpp"
+#include "../include/JobState.hpp"
 
 JobExecutor::JobExecutor(JobStateTracker& tracker) : tracker(tracker) {}
 
 void JobExecutor::executeJob(std::shared_ptr<Job> job)
 {
-    auto id = job->getId();
+    int id = job->getId();
 
     tracker.setState(id, JobState::RUNNING);
 
