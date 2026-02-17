@@ -42,7 +42,7 @@ int main()
     for(int i=1; i <= 5; i++)
     {
         JobState state = manager.getJobStatus(i);
-        std::cout << "Job " << i << "status: " << static_cast<int>(state) << std::endl;
+        std::cout << "Job " << i << " status: " << static_cast<int>(state) << std::endl;
     }
 
     pool.stop();
