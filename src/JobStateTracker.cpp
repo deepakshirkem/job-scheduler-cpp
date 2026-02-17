@@ -1,5 +1,4 @@
 #include "JobStateTracker.hpp"
-#include "../include/JobState.hpp"
 
 void JobStateTracker::setState(int id, JobState state)
 {

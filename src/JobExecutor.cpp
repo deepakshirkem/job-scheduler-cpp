@@ -1,5 +1,7 @@
 #include "JobExecutor.hpp"
-#include "../include/JobState.hpp"
+#include "Job.hpp"
+#include <thread>
+#include <chrono>
 
 JobExecutor::JobExecutor(JobStateTracker& tracker) : tracker(tracker) {}
 
@@ -7,16 +9,30 @@ void JobExecutor::executeJob(std::shared_ptr<Job> job)
 {
     int id = job->getId();
 
-    tracker.setState(id, JobState::RUNNING);
 
     try 
     {
+        tracker.setState(id, JobState::RUNNING);
         job->execute();
         tracker.setState(id, JobState::COMPLETED);
     }
     catch(...)
     {
-        tracker.setState(id, JobState::FAILED);
-        Logger::log("Job Failed:" + std::to_string(id));
+        if(job->canRetry())
+        {
+            tracker.setState(id, JobState::RETRYING);
+            job->incrementRetry();
+
+            Logger::log("Retrying Job: " + std::to_string(id) + 
+                        " Attemt: " + std::to_string(job->getRetryCount()));
+
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            executeJob(job);
+        }
+        else
+        {
+            tracker.setState(id, JobState::FAILED);
+            Logger::log("Job Permanetly Failed: " + std::to_string(id));
+        }
     }
 }
