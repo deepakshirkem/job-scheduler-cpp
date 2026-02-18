@@ -7,9 +7,8 @@ class Job
         using JobID = int;
 
         Job(JobID id, std::function<void()> task, int maxRetries = 2 );
-            
-
-        void execute();
+           
+        virtual void execute();
 
         JobID getId() const;
 
@@ -18,7 +17,10 @@ class Job
         void incrementRetry() { retryCount++; } 
 
         int getRetryCount() const { return retryCount; }
-        
+
+        virtual bool isTerminationExpected() const = 0;
+
+        virtual ~Job();
 
     private:
         JobID id;

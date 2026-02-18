@@ -10,6 +10,8 @@
 #include "JobExecutor.hpp"
 #include "WorkerPool.hpp"
 #include "JobManager.hpp"
+#include "ShutdownJob.hpp"
+#include "LongRunningJob.hpp"
 
 
 int main()
@@ -23,17 +25,32 @@ int main()
 
     for(int i=1; i <=5; i++)
     {
-        auto job = std::make_shared<Job>(i, [i]()
+        std::shared_ptr<Job> job;
+
+        if(i == 2)
         {
-            std::cout << "Executing Job " << i << std::endl;
-            std::this_thread::sleep_for(std::chrono::seconds(2));
-
-            if(i == 3)
+            job = std::make_shared<ShutdownJob>(i, [i]()
             {
-                throw std::runtime_error("Failure");
-            }
-        });
+                Logger::log("Excuting Shutdown Job:" + std::to_string(i));
+                std::this_thread::sleep_for(std::chrono::seconds(2));
 
+                
+            }); 
+        }
+         else
+            {
+                job = std::make_shared<LongRunningJob>(i, [i]
+                {
+                    Logger::log("Executing Long Running Job: " + std::to_string(i));
+                    std::this_thread::sleep_for(std::chrono::seconds(2));
+
+                    if(i == 3)
+                    {
+                        throw std::runtime_error("Crash");
+                    }
+                });
+            }
+       
         manager.submitJob(job);
     }
 

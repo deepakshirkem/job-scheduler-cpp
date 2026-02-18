@@ -9,6 +9,11 @@ void Job::execute()
         task();
 }
 
+Job::~Job()
+{
+    
+}
+
 Job::JobID Job::getId() const
 {
 
