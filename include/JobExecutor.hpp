@@ -11,7 +11,7 @@ class JobExecutor
 {
 public:
     JobExecutor(JobStateTracker& tracker);
-    void executeJob(std::shared_ptr<Job> job);
+    void executeJob(Job* job);
 
 private:
     JobStateTracker& tracker;

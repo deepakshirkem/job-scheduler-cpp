@@ -10,8 +10,8 @@
 class JobManager
 {
 public:
-    JobManager(ThreadSafeQueue<std::shared_ptr<Job>>& queue, JobStateTracker& tracker);      
-    void submitJob(std::shared_ptr<Job> job);
+    JobManager(ThreadSafeQueue<Job*> queue, JobStateTracker& tracker);      
+    void submitJob(Job* job);
     JobState getJobStatus(int id);
 
 private:

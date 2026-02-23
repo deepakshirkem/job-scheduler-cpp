@@ -5,7 +5,7 @@
 
 JobExecutor::JobExecutor(JobStateTracker& tracker) : tracker(tracker) {}
 
-void JobExecutor::executeJob(std::shared_ptr<Job> job)
+void JobExecutor::executeJob(Job* job)
 {
     int id = job->getId();
 

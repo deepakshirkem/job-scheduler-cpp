@@ -10,12 +10,12 @@
 class WorkerPool
 {
     public:
-        WorkerPool(int numThreads, ThreadSafeQueue<std::shared_ptr<Job>>& queue, JobExecutor& exec);
+        WorkerPool(int numThreads, ThreadSafeQueue<Job*>& queue, JobExecutor& exec);
         void stop();
         
     private:
         std::vector<std::thread> workers;
-        ThreadSafeQueue<std::shared_ptr<Job>>& jobQueue;
+        ThreadSafeQueue<Job*> jobQueue;
         JobExecutor& executor;
         std::atomic<bool> running;
 };
