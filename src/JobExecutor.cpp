@@ -24,7 +24,7 @@ void JobExecutor::executeJob(Job* job)
             job->incrementRetry();
 
             Logger::log("Retrying Job: " + std::to_string(id) + 
-                        " Attempt: " + std::to_string(job->getRetryCount()));
+                        " Attempted: " + std::to_string(job->getRetryCount()));
 
             std::this_thread::sleep_for(std::chrono::seconds(1));
             executeJob(job);
