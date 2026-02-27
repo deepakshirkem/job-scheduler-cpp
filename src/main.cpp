@@ -31,7 +31,7 @@ int main()
         {
             job = std::make_shared<ShutdownJob>(i, [i]()
             {
-                Logger::log("Excuting Shutdown Job:" + std::to_string(i));
+                Logger::log("Excuting Shutdown Jobs:" + std::to_string(i));
                 std::this_thread::sleep_for(std::chrono::seconds(2));
 
                 
