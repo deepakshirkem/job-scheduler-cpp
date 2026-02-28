@@ -1,13 +1,13 @@
 #include "JobManager.hpp"
 
-JobManager::JobManager(ThreadSafeQueue<Job> queue,
+JobManager::JobManager(ThreadSafeQueue<std::unique_ptr<Job>>& queue,
                        JobStateTracker& tracker)
     : jobQueue(queue), tracker(tracker) {}
 
-void JobManager::submitJob(Job* job)
+void JobManager::submitJob(std::unique_ptr<Job> job)
 {
     tracker.setState(job->getId(), JobState::PENDING);
-    jobQueue.push(job);
+    jobQueue.push(std::move(job));
 }
 
 JobState JobManager::getJobStatus(int id)

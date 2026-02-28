@@ -16,7 +16,7 @@
 
 int main()
 {
-    ThreadSafeQueue<std::shared_ptr<Job>> jobQueue;
+    ThreadSafeQueue<std::unique_ptr<Job>> jobQueue;
     JobStateTracker tracker;
     JobExecutor executor(tracker);
     JobManager manager(jobQueue, tracker);
@@ -25,11 +25,11 @@ int main()
 
     for(int i=1; i <=5; i++)
     {
-        std::shared_ptr<Job> job;
+        std::unique_ptr<Job> job;
 
         if(i == 2)
         {
-            job = std::make_shared<ShutdownJob>(i, [i]()
+            job = std::make_unique<ShutdownJob>(i, [i]()
             {
                 Logger::log("Excuting Shutdown Jobs:" + std::to_string(i));
                 std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -39,7 +39,7 @@ int main()
         }
          else
             {
-                job = std::make_shared<LongRunningJob>(i, [i]
+                job = std::make_unique<LongRunningJob>(i, [i]
                 {
                     Logger::log("Executing Long Running Job: " + std::to_string(i));
                     std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -51,7 +51,7 @@ int main()
                 });
             }
        
-        manager.submitJob(job);
+        manager.submitJob(std::move(job));
     }
 
     std::this_thread::sleep_for(std::chrono::seconds(10));

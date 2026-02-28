@@ -5,7 +5,7 @@
 
 JobExecutor::JobExecutor(JobStateTracker& tracker) : tracker(tracker) {}
 
-void JobExecutor::executeJob(Job* job)
+void JobExecutor::executeJob(std::unique_ptr<Job> job)
 {
     int id = job->getId();
 
@@ -27,7 +27,7 @@ void JobExecutor::executeJob(Job* job)
                         " Attempted: " + std::to_string(job->getRetryCount()));
 
             std::this_thread::sleep_for(std::chrono::seconds(1));
-            executeJob(job);
+            executeJob(std::move(job));
         }
         else
         {

@@ -7,10 +7,10 @@ template<typename T>
 class ThreadSafeQueue
 {
     public:
-        void push(T item)
+        void push(T&& item)
         {
             std::lock_guard<std::mutex> lock(mutex);
-            queue.push(item);
+            queue.push(std::move(item));
             cond.notify_one();
         }
 
@@ -27,7 +27,7 @@ class ThreadSafeQueue
         {
             std::unique_lock<std::mutex> lock(mutex);
             cond.wait(lock, [this]{ return !queue.empty();});
-            item = queue.front();
+            item = std::move(queue.front());
             queue.pop();
         }
 

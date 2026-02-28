@@ -1,6 +1,6 @@
 #include "WorkerPool.hpp"
 
-WorkerPool::WorkerPool(int numThread, ThreadSafeQueue<std::shared_ptr<Job>>& queue, JobExecutor& exec)
+WorkerPool::WorkerPool(int numThread, ThreadSafeQueue<std::unique_ptr<Job>>& queue, JobExecutor& exec)
             : jobQueue(queue), executor(exec), running(true)
         {
             for(int i=0; i < numThread; i++)
@@ -9,9 +9,9 @@ WorkerPool::WorkerPool(int numThread, ThreadSafeQueue<std::shared_ptr<Job>>& que
                 {
                     while(running)
                     {
-                        std::shared_ptr<Job> job;
+                        std::unique_ptr<Job> job;
                         jobQueue.waitPop(job);
-                        executor.executeJob(job);
+                        executor.executeJob(std::move(job));
                     }
                 });
             }
