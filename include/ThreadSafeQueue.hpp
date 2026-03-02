@@ -23,16 +23,35 @@ class ThreadSafeQueue
             return true;
         }
 
-        void waitPop(T& item)
+        bool waitPop(T& item)
         {
             std::unique_lock<std::mutex> lock(mutex);
-            cond.wait(lock, [this]{ return !queue.empty();});
+            cond.wait(lock, [this]
+            {
+                return !queue.empty() || shutdown_flag;
+
+            });
+
+            if(queue.empty() && shutdown_flag)
+            {
+                return false;
+            }
+
             item = std::move(queue.front());
             queue.pop();
+            return true;
+        }
+
+        void shutdown()
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            shutdown_flag = true;
+            cond.notify_all();
         }
 
     private:
         std::queue<T> queue;
         std::mutex mutex;
         std::condition_variable cond;
+        bool shutdown_flag{false};
 };

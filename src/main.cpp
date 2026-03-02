@@ -12,15 +12,16 @@
 #include "JobManager.hpp"
 #include "ShutdownJob.hpp"
 #include "LongRunningJob.hpp"
+#include "SignalHandler.hpp"
 
 
 int main()
 {
+    SignalHandler::setup();
     ThreadSafeQueue<std::unique_ptr<Job>> jobQueue;
     JobStateTracker tracker;
     JobExecutor executor(tracker);
     JobManager manager(jobQueue, tracker);
-
     WorkerPool pool(3, jobQueue, executor);
 
     for(int i=1; i <=5; i++)
@@ -54,7 +55,15 @@ int main()
         manager.submitJob(std::move(job));
     }
 
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+    Logger::log("Scheduler running — press Ctrl+C to shutdow");
+    while(!SignalHandler::isShutdownRequested())
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    Logger::log("Shutting down — waiting for running jobs to complete");
+    pool.stop();
+    Logger::log("ll jobs completed — scheduler exited clean");
 
     for(int i=1; i <= 5; i++)
     {

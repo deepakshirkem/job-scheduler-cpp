@@ -10,7 +10,10 @@ WorkerPool::WorkerPool(int numThread, ThreadSafeQueue<std::unique_ptr<Job>>& que
                     while(running)
                     {
                         std::unique_ptr<Job> job;
-                        jobQueue.waitPop(job);
+                        if(!jobQueue.waitPop(job))
+                        {
+                            break;
+                        }
                         executor.executeJob(std::move(job));
                     }
                 });
