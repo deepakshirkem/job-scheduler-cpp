@@ -59,6 +59,23 @@ int main()
     while(!SignalHandler::isShutdownRequested())
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+        bool alldone = true;
+        for(int i=1; i <= 5; i++)
+        {
+            JobState state = manager.getJobStatus(i);
+            if(state == JobState::PENDING || state == JobState::RUNNING || state == JobState::RETRYING)
+            {
+                alldone = false;
+                break;
+            }
+        }
+
+        if(alldone)
+        {
+            Logger::log("All jobs completed naturally");
+            break;
+        }
     }
 
     Logger::log("Shutting down — waiting for running jobs to complete");
@@ -68,9 +85,8 @@ int main()
     for(int i=1; i <= 5; i++)
     {
         JobState state = manager.getJobStatus(i);
-        std::cout << "Job " << i << " status: " << static_cast<int>(state) << std::endl;
+        std::cout << "Job " << i << " status: " << jobStateToString(state) << std::endl;
     }
 
-    pool.stop();
     return 0;
 }

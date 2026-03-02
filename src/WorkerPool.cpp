@@ -23,6 +23,7 @@ WorkerPool::WorkerPool(int numThread, ThreadSafeQueue<std::unique_ptr<Job>>& que
         void WorkerPool::stop()
         {
             running = false;
+            jobQueue.shutdown();
 
             for(auto& w: workers)
                 if(w.joinable())

@@ -8,6 +8,8 @@ A production-style multithreaded job scheduling system built in modern C++.
 - Job lifecycle state tracking
 - Async execution model
 - Failure handling support
+- Graceful shutdown on SIGTERM/SIGINT
+- Human readable job status reporting
 
 ## Architecture
 Client → JobManager → ThreadSafeQueue → WorkerPool → JobExecutor → JobStateTracker
