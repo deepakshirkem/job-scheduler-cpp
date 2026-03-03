@@ -18,11 +18,13 @@
 int main()
 {
     SignalHandler::setup();
+    Logger::init("jobscheduler.log");
     ThreadSafeQueue<std::unique_ptr<Job>> jobQueue;
     JobStateTracker tracker;
     JobExecutor executor(tracker);
     JobManager manager(jobQueue, tracker);
     WorkerPool pool(3, jobQueue, executor);
+
 
     for(int i=1; i <=5; i++)
     {
@@ -80,7 +82,7 @@ int main()
 
     Logger::log("Shutting down — waiting for running jobs to complete");
     pool.stop();
-    Logger::log("ll jobs completed — scheduler exited clean");
+    Logger::log("All jobs completed — scheduler exited clean");
 
     for(int i=1; i <= 5; i++)
     {
@@ -88,5 +90,6 @@ int main()
         std::cout << "Job " << i << " status: " << jobStateToString(state) << std::endl;
     }
 
+    Logger::close();
     return 0;
 }
