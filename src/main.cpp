@@ -15,6 +15,7 @@
 #include "SignalHandler.hpp"
 #include "ProcMonitor.hpp"
 #include "SocketServer.hpp"
+#include "ShellJob.hpp"
 #include <unistd.h>
 
 #define SOCKET_PATH "/tmp/job-scheduler.sock"
@@ -36,103 +37,78 @@ int main()
     Logger::log("Initial resource usage:");
     ProcMonitor::printStats(ProcMonitor::readStats(schdulerPid));
 
-    SocketServer socketServer(SOCKET_PATH, [&manager, &tracker](const std::string& cmd) -> std::string
+    std::atomic<int> jobCounter{1};
+
+    SocketServer socketServer(SOCKET_PATH, [&manager, &jobQueue, &jobCounter](const std::string& cmd) -> std::string
     {
         if(cmd == "STATUS")
         {
+            int total = jobCounter.load() - 1;
+            if(total == 0)
+            {
+                return "No jobs submitted yet\n";
+            }
+
             std::string response = "Job Status:\n";
-            for(int i=1; i <= 5; i++)
+            for(int i=1; i <= total; i++)
             {
                 JobState state = manager.getJobStatus(i);
                 response += "Job " + std::to_string(i) + ": " + jobStateToString(state) + "\n";
             }
             return response;
         }
+        else if (cmd.size() > 7 && cmd.substr(0, 6) == "SUBMIT")
+        {
+            std::string shellCommand = cmd.substr(7);
+            int newId = jobCounter.fetch_add(1);
+
+            auto job = std::make_unique<ShellJob>(newId, shellCommand);
+            manager.submitJob(std::move(job));
+
+            Logger::log("Job " + std::to_string(newId) + " submitted" + shellCommand);
+
+            return "Job " + std::to_string(newId) + " submitted successfully\n";
+        }
         else if(cmd == "SHUTDOWN")
         {
             Logger::log("Shutdown requested via socket");
             raise(SIGTERM);
-            return "Shutdown initiared\n";
+            return "Shutdown Initiated\n";
         }
         else
         {
-            return "Unknown command " + cmd + "\n";
+            return "Unknown command: " + cmd + "\nAvailable: STATUS, SUBMIT <cmd> , SHUTDOWN\n";
         }
-        
     });
 
     socketServer.start();
+    Logger::log("Scheduler ready — waiting for jobs via scheduler-client");
+    Logger::log("Commands: SUBMIT <cmd>, STATUS, SHUTDOWN");
 
-    for(int i=1; i <=5; i++)
-    {
-        std::unique_ptr<Job> job;
-
-        if(i == 2)
-        {
-            job = std::make_unique<ShutdownJob>(i, [i]()
-            {
-                Logger::log("Excuting Shutdown Jobs:" + std::to_string(i));
-                std::this_thread::sleep_for(std::chrono::seconds(2));
-
-                
-            }); 
-        }
-         else
-            {
-                job = std::make_unique<LongRunningJob>(i, [i]
-                {
-                    Logger::log("Executing Long Running Job: " + std::to_string(i));
-                    std::this_thread::sleep_for(std::chrono::seconds(2));
-
-                    if(i == 3)
-                    {
-                        throw std::runtime_error("Crash");
-                    }
-                });
-            }
-       
-        manager.submitJob(std::move(job));
-    }
-
-    Logger::log("Scheduler running — press Ctrl+C to shutdow");
     while(!SignalHandler::isShutdownRequested())
     {
-        std::this_thread::sleep_for(std::chrono::seconds(10));
-
-        bool alldone = true;
-        for(int i=1; i <= 5; i++)
-        {
-            JobState state = manager.getJobStatus(i);
-            if(state == JobState::PENDING || state == JobState::RUNNING || state == JobState::RETRYING)
-            {
-                alldone = false;
-                break;
-            }
-        }
-
-        if(alldone)
-        {
-            Logger::log("All jobs completed naturally");
-            SignalHandler::requstShutdown();
-            break;
-        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     Logger::log("Final resource usage:");
     ProcMonitor::printStats(ProcMonitor::readStats(schdulerPid));
 
-    Logger::log("Shutting down — waiting for running jobs to complete");
+    int total = jobCounter.load() - 1;
+    if(total > 0)
+    {
+        Logger::log("Final job states:");
+        for(int i=1; i <= total; i++)
+        {
+            JobState state = manager.getJobStatus(i);
+            std::cout << "Job " << i << " status: " << jobStateToString(state) << std::endl;
+        }
+    }
+
+    Logger::log("Shutting down waiting for running jobs to complete");
     socketServer.stop();
     jobQueue.shutdown();
     pool.stop();
-    Logger::log("All jobs completed — scheduler exited clean");
-
-    for(int i=1; i <= 5; i++)
-    {
-        JobState state = manager.getJobStatus(i);
-        std::cout << "Job " << i << " status: " << jobStateToString(state) << std::endl;
-    }
-
+    Logger::log("Scheduler exited cleanly");
     Logger::close();
     return 0;
 }
