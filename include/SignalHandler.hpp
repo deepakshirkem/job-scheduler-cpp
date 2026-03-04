@@ -8,6 +8,7 @@ class SignalHandler
     public:
         static void setup();
         static bool isShutdownRequested();
+        static void requstShutdown();
     
     private:
         static std::atomic<bool> shutdown_requested;

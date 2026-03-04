@@ -14,7 +14,11 @@
 #include "LongRunningJob.hpp"
 #include "SignalHandler.hpp"
 #include "ProcMonitor.hpp"
+#include "SocketServer.hpp"
 #include <unistd.h>
+
+#define SOCKET_PATH "/tmp/job-scheduler.sock"
+
 
 int main()
 {
@@ -32,6 +36,32 @@ int main()
     Logger::log("Initial resource usage:");
     ProcMonitor::printStats(ProcMonitor::readStats(schdulerPid));
 
+    SocketServer socketServer(SOCKET_PATH, [&manager, &tracker](const std::string& cmd) -> std::string
+    {
+        if(cmd == "STATUS")
+        {
+            std::string response = "Job Status:\n";
+            for(int i=1; i <= 5; i++)
+            {
+                JobState state = manager.getJobStatus(i);
+                response += "Job " + std::to_string(i) + ": " + jobStateToString(state) + "\n";
+            }
+            return response;
+        }
+        else if(cmd == "SHUTDOWN")
+        {
+            Logger::log("Shutdown requested via socket");
+            raise(SIGTERM);
+            return "Shutdown initiared\n";
+        }
+        else
+        {
+            return "Unknown command " + cmd + "\n";
+        }
+        
+    });
+
+    socketServer.start();
 
     for(int i=1; i <=5; i++)
     {
@@ -67,7 +97,7 @@ int main()
     Logger::log("Scheduler running — press Ctrl+C to shutdow");
     while(!SignalHandler::isShutdownRequested())
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::seconds(10));
 
         bool alldone = true;
         for(int i=1; i <= 5; i++)
@@ -83,6 +113,7 @@ int main()
         if(alldone)
         {
             Logger::log("All jobs completed naturally");
+            SignalHandler::requstShutdown();
             break;
         }
     }
@@ -91,6 +122,8 @@ int main()
     ProcMonitor::printStats(ProcMonitor::readStats(schdulerPid));
 
     Logger::log("Shutting down — waiting for running jobs to complete");
+    socketServer.stop();
+    jobQueue.shutdown();
     pool.stop();
     Logger::log("All jobs completed — scheduler exited clean");
 

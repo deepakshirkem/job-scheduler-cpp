@@ -14,6 +14,12 @@ bool SignalHandler::isShutdownRequested()
     return shutdown_requested.load();
 }
 
+void SignalHandler::requstShutdown()
+{
+    shutdown_requested = true;
+    Logger::log("Natural shutdown initiated");
+}
+
 void SignalHandler::handler(int signum)
 {
     if(shutdown_requested.load())
