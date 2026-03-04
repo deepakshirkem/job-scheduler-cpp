@@ -13,17 +13,24 @@
 #include "ShutdownJob.hpp"
 #include "LongRunningJob.hpp"
 #include "SignalHandler.hpp"
-
+#include "ProcMonitor.hpp"
+#include <unistd.h>
 
 int main()
 {
     SignalHandler::setup();
     Logger::init("jobscheduler.log");
+
+    int schdulerPid = getpid();
+    Logger::log("Scheduler started with PID: " + std::to_string(schdulerPid));
     ThreadSafeQueue<std::unique_ptr<Job>> jobQueue;
     JobStateTracker tracker;
     JobExecutor executor(tracker);
     JobManager manager(jobQueue, tracker);
     WorkerPool pool(3, jobQueue, executor);
+
+    Logger::log("Initial resource usage:");
+    ProcMonitor::printStats(ProcMonitor::readStats(schdulerPid));
 
 
     for(int i=1; i <=5; i++)
@@ -79,6 +86,9 @@ int main()
             break;
         }
     }
+
+    Logger::log("Final resource usage:");
+    ProcMonitor::printStats(ProcMonitor::readStats(schdulerPid));
 
     Logger::log("Shutting down — waiting for running jobs to complete");
     pool.stop();
