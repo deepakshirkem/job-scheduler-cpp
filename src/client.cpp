@@ -12,7 +12,10 @@ int main(int argc, char* argv[])
     if(argc < 2)
     {
         std::cout << "Usage: scheduler-client <command>" << std::endl;
-        std::cout << "Commands: STATUS, SHUTDOWN, SUBMIT" << std::endl;
+        std::cout << "Commands:" << std::endl;
+        std::cout << "  STATUS" << std::endl;
+        std::cout << "  SHUTDOWN"  << std::endl;
+        std::cout << "  SUBMIT <shell command>" << std::endl;
         return 1;
     }
 
@@ -35,10 +38,17 @@ int main(int argc, char* argv[])
         return 1;       
     }
 
-    std::string command = argv[1];
-    write(fd, command.c_str(), command.size());
+    std::string command = "";
+    for(int i =1; i < argc; i++)
+    {
+        command += argv[i];
+        if(i < argc -1 )
+        {
+            command += " ";
+        }
+    }
 
-    char buffer[1024] = {0};
+    char buffer[4096] = {0};
     int bytesRead = read(fd, buffer, sizeof(buffer) - 1);
     if(bytesRead > 0)
     {
