@@ -8,7 +8,7 @@ class Job
 
         Job(JobID id, std::function<void()> task, int maxRetries = 2 );
            
-        virtual void execute();
+        virtual void execute() = 0;
 
         JobID getId() const;
 

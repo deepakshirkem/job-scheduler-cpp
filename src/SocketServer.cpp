@@ -4,6 +4,7 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <sys/select.h>
 #include <cstring>
 
 SocketServer::SocketServer(const std::string& socketPath, CommandHandler handler)
@@ -68,19 +69,41 @@ void SocketServer::listen()
     struct timeval tv;
     tv.tv_sec = 1;
     tv.tv_usec = 0;
+    setsockopt(serverFd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
     Logger::log("Socket listening for commands...");
 
     while(running)
     {
-        int clintFd = accept(serverFd, nullptr, nullptr);
-        if(clintFd < 0)
+        fd_set readfds;
+        FD_ZERO(&readfds);
+        FD_SET(serverFd, &readfds);
+
+        struct timeval timeout;
+        timeout.tv_sec = 1;
+        timeout.tv_usec = 0;
+        
+        int ready = select(serverFd + 1, &readfds, nullptr, nullptr, &timeout);
+
+        if(ready < 0)
+        {
+            if(running) Logger::log("select() error");
+            break;
+           
+        }
+        else if(ready == 0)
         {
             continue;
         }
 
-        handleClient(clintFd);
-        close(clintFd);
+        int clientFd = accept(serverFd, nullptr, nullptr);
+        if(clientFd < 0)
+        {
+            continue;
+        }
+   
+        handleClient(clientFd);
+        close(clientFd);
     }
 
     close(serverFd);
@@ -91,14 +114,26 @@ void SocketServer::handleClient(int clientFd)
     char buffer[1024] = {0};
     int bytesRead = read(clientFd, buffer, sizeof(buffer) - 1);
 
+    Logger::log("BytesRead: " + std::to_string(bytesRead));
+    Logger::log("errno: " + std::to_string(errno));
+
     if(bytesRead > 0)
     {
+        Logger::log("Raw data: [" + std::string(buffer, bytesRead) + "]");
         std::string command(buffer, bytesRead);
+        while(!command.empty() && (command.back() == '\n' || command.back() == '\r'))
+        {
+            command.pop_back();
+        }
+
         Logger::log("Received command: " + command);
 
         std::string response = commandHandler(command);
-
         write(clientFd, response.c_str(), response.size());
     }
-
+    else
+    {
+        Logger::log("Read failed — bytesRead: " + std::to_string(bytesRead) + 
+                   " errno: " + std::to_string(errno));
+    }
 }

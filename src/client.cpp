@@ -48,6 +48,8 @@ int main(int argc, char* argv[])
         }
     }
 
+    write(fd, command.c_str(), command.size());
+
     char buffer[4096] = {0};
     int bytesRead = read(fd, buffer, sizeof(buffer) - 1);
     if(bytesRead > 0)
