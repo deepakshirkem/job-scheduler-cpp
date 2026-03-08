@@ -114,12 +114,8 @@ void SocketServer::handleClient(int clientFd)
     char buffer[1024] = {0};
     int bytesRead = read(clientFd, buffer, sizeof(buffer) - 1);
 
-    Logger::log("BytesRead: " + std::to_string(bytesRead));
-    Logger::log("errno: " + std::to_string(errno));
-
     if(bytesRead > 0)
     {
-        Logger::log("Raw data: [" + std::string(buffer, bytesRead) + "]");
         std::string command(buffer, bytesRead);
         while(!command.empty() && (command.back() == '\n' || command.back() == '\r'))
         {

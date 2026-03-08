@@ -38,11 +38,16 @@ void ShellJob::execute()
             {
                 throw std::runtime_error("Command failed with exit code: " + std::to_string(exitCode));
                 Logger::log("Command completed: " + command);
-            }
+            } 
             else
             {
-                throw std::runtime_error("Command terminated abnormally: " + command);
-            }
+                Logger::log("Command completed successfully: " + command);
+
+            }          
+        }
+         else
+        {
+            throw std::runtime_error("Command terminated abnormally: " + command);
         }
     }
 }

@@ -65,7 +65,7 @@ int main()
             auto job = std::make_unique<ShellJob>(newId, shellCommand);
             manager.submitJob(std::move(job));
 
-            Logger::log("Job " + std::to_string(newId) + " submitted" + shellCommand);
+            Logger::log("Job " + std::to_string(newId) + " submitted" + shellCommand + "\n");
 
             return "Job " + std::to_string(newId) + " submitted successfully\n";
         }
