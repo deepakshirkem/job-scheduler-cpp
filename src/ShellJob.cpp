@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <stdexcept>
 
-ShellJob::ShellJob(JobID id, const std::string& command) : Job(id, nullptr), command(command) {}
+ShellJob::ShellJob(JobID id, const std::string& command, int priority) : Job(id, nullptr, priority), command(command) {}
 
 bool ShellJob::isTerminationExpected() const
 {
