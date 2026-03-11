@@ -46,7 +46,7 @@ int main()
             int total = jobCounter.load() - 1;
             if(total == 0)
             {
-                return "No jobs submitted yet\n";
+                return "No Jobs Submitted yet\n";
             }
 
             std::string response = "Job Status:\n";
