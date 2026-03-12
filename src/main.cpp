@@ -11,7 +11,6 @@
 #include "WorkerPool.hpp"
 #include "JobManager.hpp"
 #include "ShutdownJob.hpp"
-#include "LongRunningJob.hpp"
 #include "SignalHandler.hpp"
 #include "ProcMonitor.hpp"
 #include "SocketServer.hpp"
@@ -59,15 +58,29 @@ int main()
         }
         else if (cmd.size() > 7 && cmd.substr(0, 6) == "SUBMIT")
         {
-            std::string shellCommand = cmd.substr(7);
+            std::string rest = cmd.substr(7);
+
+            int priority = 3;
+            size_t spacePos = rest.find(' ');
+
+            if(spacePos != std::string::npos)
+            {
+                std::string prioritystr = rest.substr(0, spacePos);
+
+                bool isNumber = !prioritystr.empty() && std::all_of(prioritystr.begin(), prioritystr.end(), ::isdigit);
+
+                if(isNumber)
+                {
+                    priority = std::stoi(prioritystr);
+                    rest = rest.substr(spacePos + 1);
+                }
+            }
             int newId = jobCounter.fetch_add(1);
-
-            auto job = std::make_unique<ShellJob>(newId, shellCommand);
+            auto job = std::make_unique<ShellJob>(newId, rest, priority);
             manager.submitJob(std::move(job));
+            Logger::log("Job " + std::to_string(newId) + " submitted with priority " + std::to_string(priority) + ": " + rest + "\n");
 
-            Logger::log("Job " + std::to_string(newId) + " submitted" + shellCommand + "\n");
-
-            return "Job " + std::to_string(newId) + " submitted successfully\n";
+            return "Job " + std::to_string(newId) + " submitted with priority" + std::to_string(priority) + "\n";
         }
         else if(cmd == "SHUTDOWN")
         {

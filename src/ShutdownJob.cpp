@@ -1,6 +1,6 @@
 #include "ShutdownJob.hpp"
 
-ShutdownJob::ShutdownJob(JobID id, std::function<void()> task) : Job(id, task)
+ShutdownJob::ShutdownJob(JobID id, std::function<void()> task) : Job(id, task, 3)
 {
 
 }
