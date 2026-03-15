@@ -33,7 +33,7 @@ int main()
     JobManager manager(jobQueue, tracker);
     WorkerPool pool(3, jobQueue, executor);
 
-    Logger::log("Initial resource usage:");
+    Logger::log("Initial resource usagee:");
     ProcMonitor::printStats(ProcMonitor::readStats(schdulerPid));
 
     std::atomic<int> jobCounter{1};
