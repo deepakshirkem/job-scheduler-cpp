@@ -90,7 +90,7 @@ int main()
         }
         else
         {
-            return "Unknown command: " + cmd + "\nAvailable: STATUS, SUBMIT <cmd> , SHUTDOWN\n";
+            return "Unknown command: " + cmd + "\nAvailable: STATUS, SUBMIT, WATCH <cmd> , SHUTDOWN\n";
         }
     });
 
