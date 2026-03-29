@@ -84,7 +84,7 @@ int main()
         }
         else if(cmd == "SHUTDOWN")
         {
-            Logger::log("Shutdown requested via Unix socket");
+            Logger::log("Shutdown requested via PIPS Unix socket");
             raise(SIGTERM);
             return "Shutdown Initiated\n";
         }
