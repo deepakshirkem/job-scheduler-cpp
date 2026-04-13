@@ -18,7 +18,7 @@ void Logger::init(const std::string& filePath)
     {
         fileLogging = true;
         logFile <<  "═══════════════════════════════════\n";
-        logFile << "  Scheduler start: " << getTimestamp() << "\n";
+        logFile << "  Schedulers start: " << getTimestamp() << "\n";
         logFile << "═══════════════════════════════════\n";
         std::cout << "Logging too file: " << filePath << std::endl;
     }
