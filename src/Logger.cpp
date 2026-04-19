@@ -48,7 +48,7 @@ void Logger::close()
     if(logFile.is_open())
     {
         logFile << "═══════════════════════════════════\n";
-        logFile << "  Scheduler stopped: " << getTimestamp() << "\n";
+        logFile << "  Schedulere stopped: " << getTimestamp() << "\n";
         logFile << "═══════════════════════════════════\n";
         logFile.close();
         fileLogging = false;
