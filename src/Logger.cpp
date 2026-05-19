@@ -24,7 +24,7 @@ void Logger::init(const std::string& filePath)
     }
     else
     {
-        std::cerr << "Failed to open log file: " << filePath << std::endl;
+        std::cerr << "Failed to open log files: " << filePath << std::endl;
     }
 }
 
