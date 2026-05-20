@@ -28,11 +28,11 @@ void SignalHandler::handler(int signum)
     }
     if(signum == SIGTERM)
     {
-        Logger::log("SIGTERM received — graceful shutdown initiated");
+        Logger::log("SIGTERM received graceful shutdown initiated");
     }
     else if ( signum == SIGINT)
     {
-        Logger::log("SIGINT received — graceful shutdown initiated");
+        Logger::log("SIGINT received graceful shutdown initiated");
     }
 
     shutdown_requested = true;
