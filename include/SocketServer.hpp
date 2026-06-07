@@ -20,6 +20,7 @@ class SocketServer
         CommandHandler commandHandler;
         std::atomic<bool> running{false};
         std::thread serverThread;
+        std::thread error;
         int serverFd{-1};
 
         void listen();
